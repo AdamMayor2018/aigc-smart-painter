@@ -8,7 +8,7 @@ BASE_NEG_PROMPT = "nsfw,(worst quality,low quality,extra digits:1.2),right lante
                   "((grayscale)),skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers," \
                   "strange fingers,bad hand,bare thights,mole,anime,(painting by bad-artist:0.9),watermark,text," \
                   "error,blurry,jpeg artifacts,cropped,signature,username,artist name,bad anatomy,extra fingers," \
-                  "fewer fingers,poor drawn hand "
+                  "fewer fingers,poor drawn hand,occlusion"
 
 
 class PromptManager:

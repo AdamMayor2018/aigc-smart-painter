@@ -5,6 +5,7 @@ import typing
 
 from config.conf_loader import YamlConfigLoader
 from diffusers import StableDiffusionPipeline
+
 import torch
 
 class BasePredictor:
