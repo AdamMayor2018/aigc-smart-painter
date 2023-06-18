@@ -1,19 +1,15 @@
 # @Time : 2023/6/16 10:22 
 # @Author : CaoXiang
 # @Description: 文生图http接口
-import typing
-
 import numpy as np
 from flask import Flask, request, jsonify
 from core.tti_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
-from collections import defaultdict
 import argparse
 import base64
 import json
 import cv2
-from PIL import Image
 
 app = Flask(__name__)
 
@@ -36,8 +32,6 @@ def wrap_json(collect_images):
     return result_data
 
 
-
-
 @app.post("/sd/tti")
 def tti_infer():
     if request.method == "POST":
@@ -58,8 +52,9 @@ def tti_infer():
                 height = prompt_request.get("height", 512)
                 extra_params = {k:v for k,v in prompt_request.items() if k not in ['request_id', 'prompt', 'batch_size', 'height', 'width']}
                 try:
-                    images = sdp.tti_inference(prompt=[pt.generate_pos_prompt(prompt)] * batch_size,
-                                               negative_prompt=[pt.generate_neg_prompt(prompt)] * batch_size,
+                    images = sdp.tti_inference(prompt=prompt,
+                                               negative_prompt=pt.generate_neg_prompt(prompt),
+                                               num_images_per_prompt = batch_size,
                                                width=width, height=height, **extra_params).images
                 except Exception as e:
                     return jsonify({"error info": f"bad params received: {e}"}), 500

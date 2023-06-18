@@ -1,3 +1,4 @@
 model_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
 device: '7'
-fp16: False
+scheduler: 'DPMSolverMultistepScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
+fp16: True
