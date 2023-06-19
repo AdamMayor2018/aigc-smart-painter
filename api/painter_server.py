@@ -34,6 +34,16 @@ def wrap_json(collect_images):
     return result_data
 
 
+def resize_to_512(width, height):
+    if width > height:
+        infer_height = int(height * 512 / width)
+        infer_width = 512
+    else:
+        infer_width = int(width * 512 / height)
+        infer_height = 512
+    return infer_width, infer_height
+
+
 @app.post("/sd/tti")
 def tti_infer():
     if request.method == "POST":
@@ -52,14 +62,11 @@ def tti_infer():
                 batch_size = prompt_request.get("batch_size", 1)
                 width = prompt_request.get("width", 512)
                 height = prompt_request.get("height", 512)
+                if batch_size > 16:
+                    return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 # 宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-                    if width > height:
-                        infer_height = int(height * 512 / width)
-                        infer_width = 512
-                    else:
-                        infer_width = int(width * 512 / height)
-                        infer_height = 512
+                    infer_width, infer_height = resize_to_512(width, height)
                 else:
                     infer_height = height
                     infer_width = width
