@@ -36,5 +36,6 @@ class PromptManager:
         return self._base_pos_prompt + "," + new_info
 
 
+
     def generate_neg_prompt(self, new_info=""):
         return self._base_neg_prompt + "," + new_info

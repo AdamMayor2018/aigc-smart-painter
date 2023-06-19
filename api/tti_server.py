@@ -13,14 +13,16 @@ import cv2
 
 app = Flask(__name__)
 
+
 def encode_frame_json(frame):
     if not isinstance(frame, np.ndarray):
         frame = np.array(frame)
-    #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2YUV)
+    # frame = cv2.cvtColor(frame, cv2.COLOR_RGB2YUV)
     frame = cv2.imencode(".jpg", frame, params=[cv2.IMWRITE_JPEG_QUALITY, 100])[1]
     res = frame.tobytes()
     res = base64.b64encode(res).decode()
     return res
+
 
 def wrap_json(collect_images):
     result_data = {"result": []}
@@ -50,22 +52,36 @@ def tti_infer():
                 batch_size = prompt_request.get("batch_size", 1)
                 width = prompt_request.get("width", 512)
                 height = prompt_request.get("height", 512)
-                extra_params = {k:v for k,v in prompt_request.items() if k not in ['request_id', 'prompt', 'batch_size', 'height', 'width']}
+                # 宽高中的长边缩放到512，短边进行等比缩放
+                if smart_mode:
+                    if width > height:
+                        infer_height = int(height * 512 / width)
+                        infer_width = 512
+                    else:
+                        infer_width = int(width * 512 / height)
+                        infer_height = 512
+                else:
+                    infer_height = height
+                    infer_width = width
+
+                extra_params = {k: v for k, v in prompt_request.items() if
+                                k not in ['request_id', 'prompt', 'batch_size', 'height', 'width']}
                 try:
                     images = sdp.tti_inference(prompt=prompt,
                                                negative_prompt=pt.generate_neg_prompt(prompt),
-                                               num_images_per_prompt = batch_size,
-                                               width=width, height=height, **extra_params).images
+                                               num_images_per_prompt=batch_size,
+                                               width=infer_width, height=infer_height, **extra_params).images
                 except Exception as e:
                     return jsonify({"error info": f"bad params received: {e}"}), 500
                 assert len(images) == batch_size, "produced images number unequal to request batch size."
+                images = [cv2.resize(np.array(img), (width, height)) for img in images]
+
                 prompt_request["images"] = images
                 collect_images.append(prompt_request)
             json_result = wrap_json(collect_images)
             return jsonify(json_result), 200
         else:
             return jsonify({"error info": "backend recieved invalid json data.missing key 'data'"}), 400
-
 
 
 if __name__ == '__main__':
@@ -82,6 +98,7 @@ if __name__ == '__main__':
     port = opt["port"]
     ip = opt["ip"]
     conf_loader = YamlConfigLoader(yaml_path)
+    smart_mode = conf_loader.attempt_load_param("smart_mode")
     sdp = StableDiffusionPredictor(config_loader=conf_loader)
     pt = PromptManager()
     app.run(port=port, debug=False, host=ip)

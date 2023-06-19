@@ -18,12 +18,14 @@ def decode_frame_json(data):
     # image = cv2.cvtColor(image, cv2.COLOR_YUV2RGB)
     return image
 
+
 if __name__ == '__main__':
     REST_API_URL = 'http://localhost:9900/sd/tti'
     painter = GridPainter()
     body = {"data": [
-        {"request_id": "1", "prompt":"a super nice car", "width":512, "height":512, "batch_size":2, "num_inference_steps":25, "guidance_scale":7.5},
-        {"request_id": "2", "prompt":"a cat with cute face", "width":512, "height":512, "batch_size":2, "num_inference_steps":25, "guidance_scale":7.5},
+        {"request_id": "1", "prompt": "a cat with cute face, (1 cat:1.2), single", "width": 1920, "height": 1080, "batch_size": 2,
+         "num_inference_steps": 30, "guidance_scale": 7.5},
+        # {"request_id": "2", "prompt":"a cat with cute face", "width":512, "height":512, "batch_size":2, "num_inference_steps":25, "guidance_scale":7.5},
     ]}
     print(json.dumps(body))
     start = time.time()
@@ -32,5 +34,5 @@ if __name__ == '__main__':
     print(f"batch api inference time: {end - start}s")
     for request_result in result:
         images = [Image.fromarray(decode_frame_json(img)) for img in request_result["images"]]
-        painter.image_grid(images, rows=1, cols= len(images))
+        painter.image_grid(images, rows=1, cols=len(images))
         painter.image_show()

@@ -1,4 +1,5 @@
 model_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
 device: '7'
-scheduler: 'DPMSolverMultistepScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
+scheduler: 'PNDMScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
 fp16: True
+smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好的生成512的图片）
