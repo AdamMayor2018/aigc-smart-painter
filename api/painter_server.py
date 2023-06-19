@@ -3,9 +3,10 @@
 # @Description: 文生图http接口
 import numpy as np
 from flask import Flask, request, jsonify
-from core.tti_predictor import StableDiffusionPredictor
+from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
+from PIL import Image
 import argparse
 import base64
 import json
@@ -22,6 +23,14 @@ def encode_frame_json(frame):
     res = frame.tobytes()
     res = base64.b64encode(res).decode()
     return res
+
+
+def decode_frame_json(data):
+    data = base64.b64decode(data.encode())
+    image = np.frombuffer(data, np.uint8)
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    # image = cv2.cvtColor(image, cv2.COLOR_YUV2RGB)
+    return image
 
 
 def wrap_json(collect_images):
@@ -45,7 +54,7 @@ def resize_to_512(width, height):
 
 
 @app.post("/sd/tti")
-def tti_infer():
+def text2img_infer():
     if request.method == "POST":
         data = request.get_json()
         if not data:
@@ -83,6 +92,60 @@ def tti_infer():
                 assert len(images) == batch_size, "produced images number unequal to request batch size."
                 images = [cv2.resize(np.array(img), (width, height)) for img in images]
 
+                prompt_request["images"] = images
+                collect_images.append(prompt_request)
+            json_result = wrap_json(collect_images)
+            return jsonify(json_result), 200
+        else:
+            return jsonify({"error info": "backend recieved invalid json data.missing key 'data'"}), 400
+
+
+@app.post("/sd/iti")
+def img2img_infer():
+    if request.method == "POST":
+        data = request.get_json()
+        if not data:
+            return jsonify({"error info": "backend recieved no json request."}), 400
+        try:
+            res = json.loads(request.get_json())
+        except Exception as e:
+            print(e)
+            return jsonify({"error info": "backend recieved invalid json data."}), 400
+        if res["data"]:
+            collect_images = []
+            for prompt_request in res["data"]:
+                prompt = prompt_request.get("prompt")
+                strength = prompt_request.get("strength", 0.75)
+                batch_size = prompt_request.get("batch_size", 1)
+                init_image = prompt_request.get("init_image")
+                init_image = Image.fromarray(decode_frame_json(init_image))
+                width = init_image.width
+                height = init_image.height
+                if not init_image:
+                    return jsonify({"error info": "backend recieved invalid json data.missing key 'init_image'"}), 400
+                if batch_size > 16:
+                    return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
+                #宽高中的长边缩放到512，短边进行等比缩放
+                if smart_mode:
+                    infer_width, infer_height = resize_to_512(width, height)
+                else:
+                    infer_height = height
+                    infer_width = width
+                init_image = init_image.resize((infer_width, infer_height))
+
+                extra_params = {k: v for k, v in prompt_request.items() if
+                                k not in ['request_id', 'prompt', 'batch_size', 'height', 'width', 'init_image']}
+                try:
+                    images = sdp.iti_inference(prompt=prompt,
+                                               negative_prompt=pt.generate_neg_prompt(prompt),
+                                               init_image=init_image,
+                                               strength=strength,
+                                               num_images_per_prompt=batch_size, **extra_params).images
+                except Exception as e:
+                    return jsonify({"error info": f"bad params received: {e}"}), 500
+                assert len(images) == batch_size, "produced images number unequal to request batch size."
+                images = [cv2.resize(np.array(img), (width, height)) for img in images]
+                images = [np.array(img) for img in images]
                 prompt_request["images"] = images
                 collect_images.append(prompt_request)
             json_result = wrap_json(collect_images)

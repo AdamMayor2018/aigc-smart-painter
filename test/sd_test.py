@@ -2,7 +2,7 @@
 # @Author : CaoXiang
 # @Description:
 
-from core.tti_predictor import StableDiffusionPredictor
+from core.sd_predictor import StableDiffusionPredictor
 from util.painter import GridPainter
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
