@@ -9,7 +9,6 @@ import base64
 from util.painter import GridPainter
 from PIL import Image
 import time
-from io import BytesIO
 
 def decode_frame_json(data):
     data = base64.b64decode(data.encode())
