@@ -56,6 +56,11 @@ class StableDiffusionPredictor:
         return images
 
     # 图生图接口（text guided）
-    def iti_inference(self, prompt: typing.Union[str, typing.Sequence[str]], init_image: np.ndarray, **kwargs):
+    def iti_inference(self, prompt: typing.Union[str, typing.Sequence[str]], init_image, **kwargs):
         images = self.iti_pipe(prompt=prompt, image=init_image, **kwargs)
+        return images
+
+    # 蒙版重绘接口
+    def inpaint_inference(self, prompt: typing.Union[str, typing.Sequence[str]], init_image, mask_image, **kwargs):
+        images = self.inpaint_pipe(prompt=prompt, image=init_image,mask_image=mask_image,  **kwargs)
         return images
