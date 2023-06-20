@@ -154,6 +154,62 @@ def img2img_infer():
             return jsonify({"error info": "backend recieved invalid json data.missing key 'data'"}), 400
 
 
+@app.post("/sd/inpaint")
+def inpaint_infer():
+    if request.method == "POST":
+        data = request.get_json()
+        if not data:
+            return jsonify({"error info": "backend recieved no json request."}), 400
+        try:
+            res = json.loads(request.get_json())
+        except Exception as e:
+            print(e)
+            return jsonify({"error info": "backend recieved invalid json data."}), 400
+        if res["data"]:
+            collect_images = []
+            for prompt_request in res["data"]:
+                prompt = prompt_request.get("prompt")
+                batch_size = prompt_request.get("batch_size", 1)
+                init_image = prompt_request.get("init_image")
+                mask_image = prompt_request.get("mask_image")
+                init_image = Image.fromarray(decode_frame_json(init_image))
+                mask_image = Image.fromarray(decode_frame_json(mask_image))
+                width = init_image.width
+                height = init_image.height
+                if not init_image:
+                    return jsonify({"error info": "backend recieved invalid json data.missing key 'init_image'"}), 400
+                if batch_size > 16:
+                    return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
+                #宽高中的长边缩放到512，短边进行等比缩放
+                if smart_mode:
+                    infer_width, infer_height = resize_to_512(width, height)
+                else:
+                    infer_height = height
+                    infer_width = width
+                init_image = init_image.resize((infer_width, infer_height))
+                mask_image = mask_image.resize((infer_width, infer_height))
+
+                extra_params = {k: v for k, v in prompt_request.items() if
+                                k not in ['request_id', 'prompt', 'batch_size', 'height', 'width', 'init_image', 'mask_image']}
+                try:
+                    images = sdp.inpaint_inference(prompt=prompt,
+                                               negative_prompt=pt.generate_neg_prompt(prompt),
+                                               init_image=init_image,
+                                               mask_image=mask_image,
+                                               num_images_per_prompt=batch_size, **extra_params).images
+                except Exception as e:
+                    return jsonify({"error info": f"bad params received: {e}"}), 500
+                assert len(images) == batch_size, "produced images number unequal to request batch size."
+                images = [cv2.resize(np.array(img), (width, height)) for img in images]
+                images = [np.array(img) for img in images]
+                prompt_request["images"] = images
+                collect_images.append(prompt_request)
+            json_result = wrap_json(collect_images)
+            return jsonify(json_result), 200
+        else:
+            return jsonify({"error info": "backend recieved invalid json data.missing key 'data'"}), 400
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # project level params
