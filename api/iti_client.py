@@ -29,7 +29,7 @@ def encode_frame_json(frame):
 if __name__ == '__main__':
     REST_API_URL = 'http://localhost:9900/sd/iti'
     painter = GridPainter()
-    path = "/data/cx/ysp/aigc-smart-painter/sketch-mountains-input.jpg"
+    path = "/data/cx/ysp/aigc-smart-painter/assets/sketch-mountains-input.jpg"
 
     init_image = cv2.imread(path)
     init_image.transpose(2, 0, 1)

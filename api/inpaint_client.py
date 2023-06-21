@@ -30,8 +30,8 @@ def encode_frame_json(frame):
 if __name__ == '__main__':
     REST_API_URL = 'http://localhost:9900/sd/inpaint'
     painter = GridPainter()
-    img_path = "/data/cx/ysp/aigc-smart-painter/overture-creations-5sI6fQgYIuo.png"
-    mask_path = "/data/cx/ysp/aigc-smart-painter/overture-creations-5sI6fQgYIuo_mask.png"
+    img_path = "/data/cx/ysp/aigc-smart-painter/assets/overture-creations-5sI6fQgYIuo.png"
+    mask_path = "/data/cx/ysp/aigc-smart-painter/assets/overture-creations-5sI6fQgYIuo_mask.png"
 
     init_image = cv2.imread(img_path)
     init_image.transpose(2, 0, 1)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     ]}
     #print(json.dumps(body))
     start = time.time()
-    result = requests.post(REST_API_URL, json=json.dumps(body)).json()
+    result = requests.post(REST_API_URL, json=json.dumps(body)).json()["result"]
     end = time.time()
     print(f"batch api inference time: {end - start}s")
     for request_result in result:
