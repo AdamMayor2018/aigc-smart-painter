@@ -4,7 +4,13 @@ device: 'cuda:7'
 scheduler: 'PNDMScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
 fp16: True
 smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好的生成512的图片）
-# 框架基础模型配配置
+
+# sam相关配置
+sam:
+  checkpoint: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
+  model_type: 'vit_h'
+  device: 'cuda:7'
+# SD框架基础模型配配置
 pipes:
   txt2img:
     class_name: 'StableDiffusionPipeline'
