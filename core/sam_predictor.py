@@ -8,8 +8,22 @@ from util.painter import Sampainter
 from config.conf_loader import YamlConfigLoader
 from segment_anything import sam_model_registry, SamPredictor
 
+class RawSeger:
+    def __init__(self):
+        pass
+    def prompt_with_box(self, image, box, reverse=False):
+        if not isinstance(image, np.ndarray):
+            image = np.array(image)
+        mask = np.zeros_like(image)
+        xmin, ymin, xmax, ymax = box
+        mask[ymin:ymax, xmin:xmax, :] = 255
+        mask = mask.astype(np.uint8)
+        if reverse:
+            mask = 255 - mask
+        return mask
 
-class SamModel:
+
+class SamSeger:
     def __init__(self, config_loader: YamlConfigLoader):
         self.config_loader = config_loader
         self.sam_config = config_loader.attempt_load_param("sam")
@@ -80,17 +94,22 @@ class SamModel:
         return scores, masks
 
 
+
+
 if __name__ == '__main__':
-    image = Image.open("/data/cx/ysp/aigc-smart-painter/assets/truck.jpg")
+    image = Image.open("/data/cx/ysp/aigc-smart-painter/assets/cloth1.jpg")
     config_loader = YamlConfigLoader(yaml_path="/data/cx/ysp/aigc-smart-painter/config/general_config.yaml")
-    sam = SamModel(config_loader)
+    sam = SamSeger(config_loader)
     sam.sam_prepare(image)
-    input_point = np.array([[500, 375]])
-    input_label = np.array([1])
+    input_point = np.array([[500, 375], [300, 400], [350, 200], [400, 100]])
+    input_label = np.array([0, 0, 1, 1])
     painter = Sampainter(figsize=(10, 10))
 
     scores, masks = sam.prompt_with_points(input_point, input_label)
     print(scores, masks)
+
+    plt.imshow(masks)
+    plt.show()
 
     plt.figure(figsize=(10,10))
     plt.imshow(image)
@@ -98,17 +117,19 @@ if __name__ == '__main__':
     plt.axis('on')
     plt.show()
 
-
-    input_box = np.array([425, 600, 700, 875])
-    input_point = np.array([[575, 750]])
-    input_label = np.array([0])
-    scores, masks = sam.prompt_with_boxes(input_box=input_box, reverse=True)
-    plt.imshow(masks)
-    plt.show()
+    # plt.imshow(image)
+    # plt.axis('on')
+    # plt.show()
+    # input_box = np.array([220, 20, 500, 300])
+    # # input_point = np.array([[575, 750]])
+    # input_label = np.array([0])
+    # scores, masks = sam.prompt_with_boxes(input_box=input_box, reverse=True)
+    # plt.imshow(masks)
+    # plt.show()
     # plt.figure(figsize=(10, 10))
     # plt.imshow(image)
     # painter.show_mask(masks, plt.gca())
     # painter.show_box(input_box, plt.gca())
-    # painter.show_points(input_point, input_label, plt.gca())
+    # #painter.show_points(input_point, input_label, plt.gca())
     # plt.axis('off')
     # plt.show()

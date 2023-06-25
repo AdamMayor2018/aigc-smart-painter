@@ -17,7 +17,7 @@ my_upload2 = st.sidebar.file_uploader("Upload an image", type=["png", "jpg", "jp
 st.markdown(":dog: **上传一张衣服图像，实现AI自动生成模特上身效果！**")
 # st.info/success/st.warning/st.error/st.exception 分别对应不同颜色
 st.info("上传的图像需要是假人或者真人模特的真实拍摄照片!如下所示：")
-img = Image.open("/data/cx/datasets/clothes/女装1.jpg")
+img = Image.open("/data/cx/datasets/clothes/cloth1.jpg")
 st.image(img, caption="举例图像", width=300)
 
 #video/audio

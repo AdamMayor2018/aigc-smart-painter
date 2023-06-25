@@ -53,6 +53,8 @@ def resize_to_512(width, height):
         infer_height = 512
     return infer_width, infer_height
 
+def resize_mask_to_512(mask, infer_width, infer_height):
+    mask[mask > 0]
 
 @app.post("/sd/tti")
 def text2img_infer():
@@ -173,12 +175,11 @@ def inpaint_infer():
                 batch_size = prompt_request.get("batch_size", 1)
                 init_image = prompt_request.get("init_image")
                 mask_image = prompt_request.get("mask_image")
-                init_image = Image.fromarray(decode_frame_json(init_image))
-                mask_image = Image.fromarray(decode_frame_json(mask_image))
-                width = init_image.width
-                height = init_image.height
-                if not init_image:
-                    return jsonify({"error info": "backend recieved invalid json data.missing key 'init_image'"}), 400
+                init_image = decode_frame_json(init_image)
+                mask_image = decode_frame_json(mask_image)
+                # width = init_image.width
+                # height = init_image.height
+                height, width, _ = init_image.shape
                 if batch_size > 16:
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 #宽高中的长边缩放到512，短边进行等比缩放
@@ -187,13 +188,17 @@ def inpaint_infer():
                 else:
                     infer_height = height
                     infer_width = width
-                init_image = init_image.resize((infer_width, infer_height))
-                mask_image = mask_image.resize((infer_width, infer_height))
+                init_image = cv2.resize(init_image, (512, 512))
+                mask_image = cv2.resize(mask_image, (512, 512))
+                init_image = Image.fromarray(init_image)
+                mask_image = Image.fromarray(mask_image)
+                # init_image = init_image.resize((infer_width, infer_height))
+                # mask_image = mask_image.resize((infer_width, infer_height))
 
                 extra_params = {k: v for k, v in prompt_request.items() if
                                 k not in ['request_id', 'prompt', 'batch_size', 'height', 'width', 'init_image', 'mask_image']}
                 try:
-                    images = sdp.inpaint_inference(prompt=prompt,
+                    images = sdp.inpaint_inference(prompt=pm.generate_pos_prompt(prompt),
                                                    negative_prompt=pm.generate_neg_prompt(prompt),
                                                    init_image=init_image,
                                                    mask_image=mask_image,
