@@ -22,4 +22,4 @@ with st.sidebar:
     ac.st_button(url="https://twitter.com/dclin", label="Let's connect", font_awesome_icon="fa-twitter")
     ac.st_button(url="https://www.buymeacoffee.com/gptlab", label="Buy me a coffee", font_awesome_icon="fa-coffee")
     ac.st_button(url="https://gptlab.beehiiv.com/subscribe", label="Subscribe to news and updates", font_awesome_icon="fa-newspaper-o")
-    st.image(Image.open("/data/cx/ysp/aigc-smart-painter/ikun.jpg"), width=50)
+    st.image(Image.open("/data/cx/ysp/aigc-smart-painter/assets/ikun.jpg"), width=50)
