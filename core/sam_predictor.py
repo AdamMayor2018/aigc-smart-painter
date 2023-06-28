@@ -22,6 +22,19 @@ class RawSeger:
             mask = 255 - mask
         return mask
 
+# class RawSeger:
+#     def __init__(self):
+#         pass
+#     def prompt_with_box(self, image, box, reverse=False):
+#         if not isinstance(image, np.ndarray):
+#             image = np.array(image)
+#         mask = np.zeros(image.shape[:2])
+#         xmin, ymin, xmax, ymax = box
+#         mask[ymin:ymax, xmin:xmax] = 255
+#         mask = mask.astype(np.uint8)
+#         if reverse:
+#             mask = 255 - mask
+#         return mask
 
 class SamSeger:
     def __init__(self, config_loader: YamlConfigLoader):

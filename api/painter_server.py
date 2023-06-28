@@ -53,8 +53,6 @@ def resize_to_512(width, height):
         infer_height = 512
     return infer_width, infer_height
 
-def resize_mask_to_512(mask, infer_width, infer_height):
-    mask[mask > 0]
 
 @app.post("/sd/tti")
 def text2img_infer():
@@ -188,8 +186,9 @@ def inpaint_infer():
                 else:
                     infer_height = height
                     infer_width = width
-                init_image = cv2.resize(init_image, (512, 512))
-                mask_image = cv2.resize(mask_image, (512, 512))
+                init_image = cv2.resize(init_image, (infer_width, infer_height))
+                mask_image = cv2.resize(mask_image, (infer_width, infer_height))
+                print(infer_width, infer_height)
                 init_image = Image.fromarray(init_image)
                 mask_image = Image.fromarray(mask_image)
                 # init_image = init_image.resize((infer_width, infer_height))
@@ -202,6 +201,8 @@ def inpaint_infer():
                                                    negative_prompt=pm.generate_neg_prompt(prompt),
                                                    init_image=init_image,
                                                    mask_image=mask_image,
+                                                   height=infer_height,
+                                                   width=infer_width,
                                                    num_images_per_prompt=batch_size, **extra_params).images
                 except Exception as e:
                     return jsonify({"error info": f"bad params received: {e}"}), 500

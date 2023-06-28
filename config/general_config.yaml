@@ -9,28 +9,35 @@ smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好�
 sam:
   checkpoint: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
   model_type: 'vit_h'
-  device: 'cuda:7'
+  device: 'cuda:2'
 # SD框架基础模型配配置
 pipes:
   txt2img:
     class_name: 'StableDiffusionPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:2'
     scheduler: 'PNDMScheduler'
     mode: 'on'
   img2img:
     class_name: 'StableDiffusionImg2ImgPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:2'
     scheduler: 'PNDMScheduler'
     mode: 'on'
+#  inpaint:
+#    class_name: 'StableDiffusionPipeline'
+#    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
+#    torch_dtype: 'torch.float16'
+#    device: 'cuda:2'
+#    scheduler: 'PNDMScheduler'
+#    mode: 'on'
   inpaint:
     class_name: 'StableDiffusionInpaintPipeline'
-    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-inpainting'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:2'
     scheduler: 'PNDMScheduler'
     mode: 'on'
   canny-control:
@@ -41,7 +48,7 @@ pipes:
         torch_dtype: 'torch.float16'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:2'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'on'
   openpose-control:
@@ -52,7 +59,7 @@ pipes:
       torch_dtype: 'torch.float16'
       pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:2'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'on'
 

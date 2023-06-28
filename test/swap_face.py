@@ -48,11 +48,12 @@ if __name__ == '__main__':
     show_image(new_image)
     # image = image.resize((512, 512))
     mask = seger.prompt_with_box(image, box=box, reverse=False)
+    show_image(mask)
 
     init_image = encode_frame_json(image)
     mask_image = encode_frame_json(mask)
     body = {"data": [
-        {"request_id": "1", "prompt": "1 girl,head,realistic,single, simple background", "batch_size": 1,
+        {"request_id": "1", "prompt": "best quality,symmetry realistic,real life,photography,masterpiece,8K,HDR,highres,1 gril, looking at viewer", "batch_size": 1,
          "num_inference_steps": 50, "guidance_scale": 7.5, "init_image": init_image, "mask_image": mask_image},
     ]}
     # print(json.dumps(body))
