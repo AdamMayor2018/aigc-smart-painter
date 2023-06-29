@@ -16,7 +16,10 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
+    StableDiffusionControlNetInpaintPipeline,
+    ControlNetModel
 )
+from core.controller import ControlNetPreProcessor
 def draw_box(arr: np.ndarray, cords: typing.List[int], color: typing.Tuple[int, int, int],
              thickness: int) -> np.ndarray:
     """
@@ -40,24 +43,33 @@ def show_image(image):
     plt.imshow(image)
     plt.axis('on')
     plt.show()
-text2img = StableDiffusionPipeline.from_pretrained("/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix")
-inpaint = StableDiffusionInpaintPipeline(**text2img.components)
+controlnet = ControlNetModel.from_pretrained("/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose")
+text2img = StableDiffusionPipeline.from_pretrained("/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix").to("cuda:2")
+#inpaint = StableDiffusionInpaintPipeline(**text2img.components)
+inpaint = StableDiffusionControlNetInpaintPipeline(**text2img.components, controlnet=controlnet)
+inpaint.to("cuda:2")
 seger = RawSeger()
 REST_API_URL = 'http://localhost:9900/sd/inpaint'
 painter = GridPainter()
 img_path = "/data/cx/ysp/aigc-smart-painter/assets/cloth1.jpg"
 image = Image.open(img_path)
-box = [220, 20, 500, 320]
+box = [240, 20, 500, 290]
 new_image = draw_box(np.array(image), cords=box, color=(255, 0, 0), thickness=2)
 show_image(new_image)
 mask = seger.prompt_with_box(image, box=box, reverse=False)
 mask = Image.fromarray(mask)
 show_image(mask)
 end = time.time()
-prompt = "best quality,symmetry realistic,real life,photography,masterpiece,8K,HDR,highres,1 gril, looking at viewer"
-images = inpaint(prompt=prompt, image=image, mask_image=mask, num_images_per_prompt=1,
-         num_inference_steps=50, guidance_scale=7.5,)
 
-painter.image_grid(images, rows=1, cols=len(images) // 1)
+# controlnet
+cnet_preprocesser = ControlNetPreProcessor(aux_model_path="/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators")
+pose_image = cnet_preprocesser.aux_infer(image, "openpose")
+show_image(pose_image)
+
+prompt = "1 girl,fashion model,standing, wearing a shirt"
+images = inpaint(prompt=prompt, image=image, mask_image=mask, num_images_per_prompt=8,
+         num_inference_steps=50, guidance_scale=7.5, control_image=pose_image).images
+
+painter.image_grid(images, rows=2, cols=len(images) // 2)
 painter.image_show()
 print("finished")

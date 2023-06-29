@@ -57,14 +57,16 @@ def resize_to_512(width, height):
 @app.post("/sd/tti")
 def text2img_infer():
     if request.method == "POST":
-        data = request.get_json()
-        if not data:
-            return jsonify({"error info": "backend recieved no json request."}), 400
         try:
-            res = json.loads(request.get_json())
+            data = request.get_json()
+            if isinstance(data, str):
+                res = json.loads(data)
+            elif isinstance(data, dict):
+                res = data
+            else:
+                raise Exception("request data format error")
         except Exception as e:
-            print(e)
-            return jsonify({"error info": "backend recieved invalid json data."}), 400
+            return jsonify({"error info": str(e)}), 400
         if res["data"]:
             collect_images = []
             for prompt_request in res["data"]:
@@ -159,9 +161,11 @@ def img2img_infer():
 def inpaint_infer():
     if request.method == "POST":
         data = request.get_json()
+        print(f"data: {data}")
         if not data:
             return jsonify({"error info": "backend recieved no json request."}), 400
         try:
+            print(request.get_json())
             res = json.loads(request.get_json())
         except Exception as e:
             print(e)
@@ -280,7 +284,7 @@ if __name__ == '__main__':
                         help='config yaml file path')
     parser.add_argument('--port', type=str, default=9900,
                         help='web server port')
-    parser.add_argument('--ip', type=str, default="localhost",
+    parser.add_argument('--ip', type=str, default="10.5.101.152",
                         help='web server ip binding')
     opt = vars(parser.parse_args())
     yaml_path = opt["conf"]
