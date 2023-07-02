@@ -10,6 +10,17 @@ sam:
   checkpoint: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
   model_type: 'vit_h'
   device: 'cuda:2'
+
+#yolo相关配置
+yolo:
+    checkpoint_path: '/data/cx/ysp/h2v_screen_live/weights/yolov5s-face-raw.pt'
+    weight_yaml_path: '/data/cx/ysp/h2v_screen_live/config/yolov5_face/yolov5s.yaml'
+    device: 'cuda:2'
+    conf_thres: 0.3
+    iou_thres: 0.05
+    use_fp16: True
+    img_size: 608
+
 # SD框架基础模型配配置
 pipes:
   txt2img:

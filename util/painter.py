@@ -2,9 +2,35 @@
 # @Author : CaoXiang
 # @Description: 画画工具类
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import numpy as np
+import typing
 import matplotlib.pyplot as plt
+
+def show_image(image):
+    plt.figure()
+    plt.imshow(image)
+    plt.axis('on')
+    plt.show()
+
+def draw_box(arr: np.ndarray, cords: typing.List[int], color: typing.Tuple[int, int, int],
+             thickness: int) -> np.ndarray:
+    """
+        在原图上绘制出矩形框
+    :param arr: 传入的原图ndarray
+    :param cords: 框的坐标，按照【xmin,ymin,xmax,ymax】的方式进行组织
+    :param color: 框的颜色
+    :param thickness: 框线的宽度
+    :return: 绘制好框后的图像仍然按照ndarray的数据格式s
+    """
+    assert len(cords) == 4, "cords must have 4 elements as xmin ymin xmax ymax."
+    assert isinstance(arr, np.ndarray), "input must be type of numpy ndarray."
+    img = Image.fromarray(arr)
+    draw = ImageDraw.Draw(img)
+    draw.rectangle(xy=cords, outline=color, width=thickness)
+    img = np.array(img)
+    return img
+
 
 
 class GridPainter:
