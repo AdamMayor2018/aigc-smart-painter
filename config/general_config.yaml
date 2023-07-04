@@ -21,6 +21,8 @@ yolo:
     use_fp16: True
     img_size: 608
 
+
+
 # SD框架基础模型配配置
 pipes:
   txt2img:
@@ -65,6 +67,18 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:2'
     scheduler: 'UniPCMultistepScheduler'
+    mode: 'on'
+  cloth_feature_extractor:
+    class_name: 'AutoFeatureExtractor'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/segformer_b2_clothes'
+    torch_dtype: 'torch.float32'
+    device: 'cpu'
+    mode: 'on'
+  segformer:
+    class_name: 'SegformerForSemanticSegmentation'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/segformer_b2_clothes'
+    torch_dtype: 'torch.float32'
+    device: 'cpu'
     mode: 'on'
 
 

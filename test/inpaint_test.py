@@ -53,11 +53,13 @@ def draw_box(arr: np.ndarray, cords: typing.List[int], color: typing.Tuple[int, 
     img = np.array(img)
     return img
 
+
 def show_image(image):
     plt.figure()
     plt.imshow(image)
     plt.axis('on')
     plt.show()
+
 
 controlnet = ControlNetModel.from_pretrained("/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose")
 text2img = StableDiffusionPipeline.from_pretrained("/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix").to("cuda:2")

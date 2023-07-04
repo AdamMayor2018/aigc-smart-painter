@@ -4,8 +4,10 @@
 import copy
 import typing
 
+import matplotlib.pyplot as plt
+from PIL import Image
 import numpy as np
-
+import torch.nn as nn
 from config.conf_loader import YamlConfigLoader
 from diffusers import (
     StableDiffusionPipeline,
@@ -25,6 +27,28 @@ from diffusers import (
     UniPCMultistepScheduler
 )
 import torch
+from transformers import AutoFeatureExtractor, SegformerForSemanticSegmentation
+
+part_pairs = {
+    "background": "0",
+    "hat": "1",
+    "hair": "2",
+    "sunglasses": "3",
+    "upper-clothes": "4",
+    "skirt": "5",
+    "pants": "6",
+    "dress": "7",
+    "belt": "8",
+    "left-shoe": "9",
+    "right-shoe": "10",
+    "face": "11",
+    "left-leg": "12",
+    "right-leg": "13",
+    "left-arm": "14",
+    "right-arm": "15",
+    "bag": "16",
+    "scarf": "17"
+}
 
 
 class BasePredictor:
@@ -54,9 +78,15 @@ class StableDiffusionPredictor:
                         fix_subconfig = copy.deepcopy(subconfig)
                         fix_subconfig.pop("class_name")
                         extra_params = {subname: globals()[class_name].from_pretrained(**fix_subconfig)}
-                scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path, subfolder="scheduler")
-                loaded_pipe = globals()[config.get("class_name")].from_pretrained(config.get("pretrained_model_name_or_path"), scheduler=scheduler, torch_dtype=eval(config.get("torch_dtype")), **extra_params)
-                loaded_pipe.to(f"{config.get('device')}")
+                try:
+                    scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path, subfolder="scheduler")
+                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(config.get("pretrained_model_name_or_path"), scheduler=scheduler, torch_dtype=eval(config.get("torch_dtype")), **extra_params)
+                except KeyError:
+                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(config.get("pretrained_model_name_or_path"), **extra_params)
+                try:
+                    loaded_pipe.to(f"{config.get('device')}")
+                except:
+                    pass
                 self.prepared_pipes[name] = loaded_pipe
 
     # 文生图接口
@@ -84,7 +114,37 @@ class StableDiffusionPredictor:
             raise ValueError("mode must be one of ['openpose', 'canny']")
         return images
 
+    def segformer_mask_inference(self, image, part="upper-clothes"):
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+        inputs = self.prepared_pipes["cloth_feature_extractor"](images=image, return_tensors="pt")
+        outputs = self.prepared_pipes["segformer"](**inputs)
+        logits = outputs.logits.cpu()
+
+        upsampled_logits = nn.functional.interpolate(
+            logits,
+            size=image.size[::-1],
+            mode="bilinear",
+            align_corners=False,
+        )
+        pred_seg = upsampled_logits.argmax(dim=1)[0]
+        if part.lower() != "background":
+            pred_seg[pred_seg != int(part_pairs[part.lower()])] = 0
+        else:
+            pred_seg[pred_seg == 0] = 255
+            pred_seg[pred_seg != 255] = 0
+        arr_seg = pred_seg.cpu().numpy().astype("uint8")
+        arr_seg *= 255
+        return arr_seg
+
+
 
 if __name__ == '__main__':
     sdp = StableDiffusionPredictor(YamlConfigLoader("/data/cx/ysp/aigc-smart-painter/config/general_config.yaml"))
+    image = Image.open("/data/cx/ysp/aigc-smart-painter/assets/cloth1.jpg")
+    image = np.array(image)
+    mask = sdp.segformer_mask_inference(image, part="face")
+    plt.imshow(mask)
+    plt.show()
+
 
