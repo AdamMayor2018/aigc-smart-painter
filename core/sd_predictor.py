@@ -26,6 +26,7 @@ from diffusers import (
     DPMSolverMultistepScheduler,
     UniPCMultistepScheduler
 )
+
 import torch
 from transformers import AutoFeatureExtractor, SegformerForSemanticSegmentation
 
