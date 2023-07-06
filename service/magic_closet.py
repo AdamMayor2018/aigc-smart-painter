@@ -29,7 +29,7 @@ class MagicCloset(BaseMagicTool):
         pass
 
     # 保留衣服更换model
-    def swap_model(self, image, part, prompt, num_images_per_prompt, num_inference_steps=50):
+    def swap_model(self, image, part, prompt, num_images_per_prompt, num_inference_steps=50, strength=0.75):
         image = image.convert('RGB')
         #1.获取衣服蒙版
         mask_image = self.base_predictor.segformer_mask_inference(image=image, part=part, reverse=True)
@@ -41,7 +41,7 @@ class MagicCloset(BaseMagicTool):
         #4.inpaint获取更改后的图像
         images = self.base_predictor.controlnet_inpaint_inference(mode="multi", prompt=self.pm.generate_pos_prompt(prompt), negative_prompt=self.pm.generate_neg_prompt("big head"), image=image,
                                                                   mask_image=Image.fromarray(mask_image), num_images_per_prompt=num_images_per_prompt,
-                                                                  num_inference_steps=num_inference_steps, guidance_scale=7.5, control_images=control_images).images
+                                                                  num_inference_steps=num_inference_steps, guidance_scale=7.5, control_images=control_images, strength=strength).images
         return mask_image, control_images, images
 
 
