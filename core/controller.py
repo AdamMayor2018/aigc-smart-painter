@@ -8,7 +8,7 @@
 from controlnet_aux import OpenposeDetector, CannyDetector
 
 
-class ControlNetPreProcessor:
+class OpenPosePreProcessor:
     def __init__(self, aux_model_path):
         self.canny = None
         self.openpose = None

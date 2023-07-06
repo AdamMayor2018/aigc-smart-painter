@@ -9,11 +9,13 @@ from PIL import Image
 import numpy as np
 import torch.nn as nn
 from config.conf_loader import YamlConfigLoader
+from controlnet_aux import OpenposeDetector, CannyDetector
 from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
     StableDiffusionControlNetPipeline,
+    StableDiffusionControlNetInpaintPipeline,
     ControlNetModel
 )
 from diffusers import (
@@ -73,17 +75,24 @@ class StableDiffusionPredictor:
             extra_params = {}
             if config.get("mode") == "on":
                 for subname, subconfig in config.items():
-                    if isinstance(subconfig, dict) and "class_name" in subconfig.keys():
-                        class_name = subconfig.get("class_name")
-                        subconfig["torch_dtype"] = eval(subconfig.get("torch_dtype"))
-                        fix_subconfig = copy.deepcopy(subconfig)
-                        fix_subconfig.pop("class_name")
-                        extra_params = {subname: globals()[class_name].from_pretrained(**fix_subconfig)}
+                    if subname == "controlnet":
+                        controlnets = subconfig
+                        extra_params = {subname: []}
+                        for net in controlnets:
+                            class_name = net.get("class_name")
+                            net["torch_dtype"] = eval(net.get("torch_dtype"))
+                            fix_subconfig = copy.deepcopy(net)
+                            fix_subconfig.pop("class_name")
+                            extra_params[subname].append(globals()[class_name].from_pretrained(**fix_subconfig))
                 try:
-                    scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path, subfolder="scheduler")
-                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(config.get("pretrained_model_name_or_path"), scheduler=scheduler, torch_dtype=eval(config.get("torch_dtype")), **extra_params)
+                    scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path,
+                                                                                   subfolder="scheduler")
+                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(
+                        config.get("pretrained_model_name_or_path"), scheduler=scheduler,
+                        torch_dtype=eval(config.get("torch_dtype")), **extra_params)
                 except KeyError:
-                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(config.get("pretrained_model_name_or_path"), **extra_params)
+                    loaded_pipe = globals()[config.get("class_name")].from_pretrained(
+                        config.get("pretrained_model_name_or_path"), **extra_params)
                 try:
                     loaded_pipe.to(f"{config.get('device')}")
                 except:
@@ -102,7 +111,7 @@ class StableDiffusionPredictor:
 
     # 蒙版重绘接口
     def inpaint_inference(self, prompt: typing.Union[str, typing.Sequence[str]], init_image, mask_image, **kwargs):
-        images = self.prepared_pipes["inpaint"](prompt=prompt, image=init_image,mask_image=mask_image,  **kwargs)
+        images = self.prepared_pipes["inpaint"](prompt=prompt, image=init_image, mask_image=mask_image, **kwargs)
         return images
 
     # controlnet接口
@@ -115,7 +124,26 @@ class StableDiffusionPredictor:
             raise ValueError("mode must be one of ['openpose', 'canny']")
         return images
 
-    def segformer_mask_inference(self, image, part="upper-clothes"):
+    def controlnet_inpaint_inference(self, mode: str, prompt, image, control_images, mask_image, **kwargs):
+        if mode == "multi":
+            images = self.prepared_pipes["controlnet_inpaint_multi"](image=image, control_image=control_images,
+                                                                        mask_image=mask_image, prompt=prompt, **kwargs)
+        else:
+            raise ValueError("mode now must be one of ['multi']")
+        return images
+
+    # 主要是controlnet前置依赖的条件图获取 比如canny边缘图 或者是openpose姿态图
+    def controlnet_aux_inferece(self, mode: str, image, hand_and_face=True, **kwargs):
+        if mode == "openpose":
+            control_image = self.prepared_pipes["openpose_aux"](input_image=image, hand_and_face=hand_and_face,
+                                                                **kwargs)
+        elif mode == "canny":
+            control_image = Image.fromarray(CannyDetector()(image))
+        else:
+            raise ValueError("mode now must be one of ['openpose']")
+        return control_image
+
+    def segformer_mask_inference(self, image, part="upper-clothes", reverse=False):
         if isinstance(image, np.ndarray):
             image = Image.fromarray(image)
         inputs = self.prepared_pipes["cloth_feature_extractor"](images=image, return_tensors="pt")
@@ -136,8 +164,9 @@ class StableDiffusionPredictor:
             pred_seg[pred_seg != 255] = 0
         arr_seg = pred_seg.cpu().numpy().astype("uint8")
         arr_seg *= 255
+        if reverse:
+            arr_seg = 255 - arr_seg
         return arr_seg
-
 
 
 if __name__ == '__main__':
@@ -147,5 +176,3 @@ if __name__ == '__main__':
     mask = sdp.segformer_mask_inference(image, part="face")
     plt.imshow(mask)
     plt.show()
-
-
