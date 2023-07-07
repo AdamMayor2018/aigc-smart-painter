@@ -28,7 +28,7 @@ def encode_frame_json(frame):
     return res
 
 if __name__ == '__main__':
-    REST_API_URL = 'http://localhost:9900/sd/inpaint'
+    REST_API_URL = 'http://10.5.101.152:9900/sd/inpaint'
     painter = GridPainter()
     img_path = "/data/cx/ysp/aigc-smart-painter/assets/overture-creations-5sI6fQgYIuo.png"
     mask_path = "/data/cx/ysp/aigc-smart-painter/assets/overture-creations-5sI6fQgYIuo_mask.png"

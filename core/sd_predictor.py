@@ -159,11 +159,12 @@ class StableDiffusionPredictor:
         pred_seg = upsampled_logits.argmax(dim=1)[0]
         if part.lower() != "background":
             pred_seg[pred_seg != int(part_pairs[part.lower()])] = 0
+            pred_seg[pred_seg != 0] = 255
         else:
             pred_seg[pred_seg == 0] = 255
             pred_seg[pred_seg != 255] = 0
         arr_seg = pred_seg.cpu().numpy().astype("uint8")
-        arr_seg *= 255
+        #arr_seg *= 255
         if reverse:
             arr_seg = 255 - arr_seg
         return arr_seg

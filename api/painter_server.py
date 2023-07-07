@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
-from core.controller import ControlNetPreProcessor
+#from core.controller import ControlNetPreProcessor
 from PIL import Image
 import argparse
 import base64
@@ -294,5 +294,5 @@ if __name__ == '__main__':
     smart_mode = conf_loader.attempt_load_param("smart_mode")
     sdp = StableDiffusionPredictor(config_loader=conf_loader)
     pm = PromptManager()
-    cnet_preprocesser = ControlNetPreProcessor(aux_model_path=conf_loader.attempt_load_param("aux_model_path"))
+    #cnet_preprocesser = ControlNetPreProcessor(aux_model_path=conf_loader.attempt_load_param("aux_model_path"))
     app.run(port=port, debug=False, host=ip)
