@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
-from core.controller import OpenPosePreProcessor
+#from core.controller import ControlNetPreProcessor
 from PIL import Image
 import argparse
 import base64
@@ -250,7 +250,6 @@ def controlnet_infer():
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 #宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-
                     infer_width, infer_height = resize_to_512(width, height)
                 else:
                     infer_height = height
@@ -295,5 +294,5 @@ if __name__ == '__main__':
     smart_mode = conf_loader.attempt_load_param("smart_mode")
     sdp = StableDiffusionPredictor(config_loader=conf_loader)
     pm = PromptManager()
-    cnet_preprocesser = OpenPosePreProcessor(aux_model_path=conf_loader.attempt_load_param("aux_model_path"))
+    #cnet_preprocesser = ControlNetPreProcessor(aux_model_path=conf_loader.attempt_load_param("aux_model_path"))
     app.run(port=port, debug=False, host=ip)
