@@ -48,11 +48,7 @@ class DictConfigLoader(BaseConfigLoader):
 
 
 if __name__ == '__main__':
-    opt_dict = {"opt_level": 1, "opt_name": "test"}
-    config_dict = {"opt_level": 2, "is_new": False}
-    yaml_path = "xiangsheng_config.yaml"
+    opt_dict = None
+    yaml_path = "/data/cx/ysp/aigc-smart-painter/config/general_config.yaml"
     yaml_loader = YamlConfigLoader(yaml_path, opt_dict)
-    print(yaml_loader.attempt_load_param("device"))
-
-    dict_loader = DictConfigLoader(config_dict, opt_dict)
-    print(dict_loader.attempt_load_param("is_new"))
+    print(yaml_loader)

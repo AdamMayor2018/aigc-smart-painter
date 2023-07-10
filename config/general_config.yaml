@@ -72,7 +72,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:3'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
   canny_control: #controlnet控制
     class_name: 'StableDiffusionControlNetPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
