@@ -59,7 +59,7 @@ pipes:
 #    mode: 'on'
   controlnet_inpaint_multi: #蒙版+contronet控制重绘
     class_name: 'StableDiffusionControlNetInpaintPipeline'
-    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/epiCRealism'
     controlnet:
       - type: "openpose"
         class_name: 'ControlNetModel'

@@ -34,7 +34,9 @@ conf_loader = YamlConfigLoader(yaml_path="/data/cx/ysp/aigc-smart-painter/config
 # 初始化服务
 cloth_service = MagicCloset(conf_loader)
 prompt = "1 girl,(portrait:1.2),model shoot style, smooth facial skin, black hair, indoors,Hands akimbo,carrying a women ba"
-mask_image, control_images, images = cloth_service.swap_model(image, part="upper-clothes", prompt=prompt, num_images_per_prompt=8, num_inference_steps=50, strength=0.6)
+mask_image, control_images, images = cloth_service.swap_model(image, ("upper-clothes",), prompt=prompt,
+                                                              negative_prompt='', num_images_per_prompt=8,
+                                                              num_inference_steps=50, strength=0.6)
 #mask_image,control_images, images = cloth_service.swap_background(image, prompt, num_images_per_prompt=8,reverse=True)
 plt.imsave(f"/data/cx/ysp/aigc-smart-painter/assets2/mask.jpg", np.array(mask_image))
 for i, image in enumerate(control_images):

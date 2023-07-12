@@ -1,70 +1,39 @@
-# @Time : 2023/6/25 15:49 
-# @Author : CaoXiang
-# @Description:
 from PIL import Image, ImageDraw
-import typing
-import requests
-import json
-import time
 import numpy as np
-import cv2
-from core.sam_predictor import RawSeger
 import matplotlib.pyplot as plt
-from util.painter import GridPainter
-from api.inpaint_client import decode_frame_json, encode_frame_json
+from config.conf_loader import YamlConfigLoader
+from diffusers import (
+    StableDiffusionPipeline,
+    StableDiffusionImg2ImgPipeline,
+    StableDiffusionInpaintPipeline,
+    StableDiffusionControlNetInpaintPipeline,
+    ControlNetModel
+)
+from model_plugin.face_detector import Yolov5FaceDetector
+from core.prompt_loader import PromptManager
+from core.sd_predictor import StableDiffusionPredictor
 
-def draw_box(arr: np.ndarray, cords: typing.List[int], color: typing.Tuple[int, int, int],
-             thickness: int) -> np.ndarray:
-    """
-        在原图上绘制出矩形框
-    :param arr: 传入的原图ndarray
-    :param cords: 框的坐标，按照【xmin,ymin,xmax,ymax】的方式进行组织
-    :param color: 框的颜色
-    :param thickness: 框线的宽度
-    :return: 绘制好框后的图像仍然按照ndarray的数据格式s
-    """
-    assert len(cords) == 4, "cords must have 4 elements as xmin ymin xmax ymax."
-    assert isinstance(arr, np.ndarray), "input must be type of numpy ndarray."
-    img = Image.fromarray(arr)
-    draw = ImageDraw.Draw(img)
-    draw.rectangle(xy=cords, outline=color, width=thickness)
-    img = np.array(img)
-    return img
+from service.magic_closet import MagicCloset
 
-def show_image(image):
-    plt.figure()
-    plt.imshow(image)
-    plt.axis('on')
-    plt.show()
+#((1 girl)), (goddess-like happiness:1.2), Kpop idol, smile, (RAW photo:1.2), (photorealistic:1.4), (masterpiece:1.3), (intricate details:1.2), delicate, beautiful detailed, (detailed eyes), (detailed facial features), (20 years old female with fashion clothes), tall female, petite, small breasts, narrow waist, (facing camera), (looking_at_viewer:1.3), from_front, big circle earrings, slim_legs, (best quality:1.4), (ultra highres:1.2), cinema light, outdoors, (extreme detailed illustration), (lipgloss, eyelashes, best quality, ultra highres, depth of field, caustics, Broad lighting, natural shading, 85mm, f/1.4, ISO 200, 1/160s:0.75)
 
-if __name__ == '__main__':
-    seger = RawSeger()
-    REST_API_URL = 'http://localhost:9900/sd/inpaint'
-    painter = GridPainter()
-    img_path = "/data/cx/ysp/aigc-smart-painter/assets/cloth1.jpg"
-    image= Image.open(img_path)
-    box = [220, 20, 500, 320]
-    new_image = draw_box(np.array(image), cords=box, color=(255, 0, 0), thickness=2)
-    show_image(new_image)
-    # image = image.resize((512, 512))
-    mask = seger.prompt_with_box(image, box=box, reverse=False)
-    show_image(mask)
+# 读取图片
+img_path = "/home/guoshida/projects/aigc-smart-painter/assets2/cloth1.jpg"
+image = Image.open(img_path)
+conf_loader = YamlConfigLoader(yaml_path="/home/guoshida/projects/aigc-smart-painter/config/general_config.yaml")
+# 初始化服务
+cloth_service = MagicCloset(conf_loader)
+prompt = "photo of a beautiful woman looking into camera, soft light, beautiful skin, hair ribbons, pastel colors,"
+negative_prompt = ""
+mask_image, control_images, images = cloth_service.swap_model(image, parts=("face", "hair"), prompt=prompt,
+                                                              negative_prompt=negative_prompt, num_images_per_prompt=8, num_inference_steps=50, strength=0.6, reverse=False)
+#mask_image,control_images, images = cloth_service.swap_background(image, prompt, num_images_per_prompt=8,reverse=True)
+plt.imsave(f"/home/guoshida/projects/aigc-smart-painter/assets2/mask.jpg", np.array(mask_image))
+for i, image in enumerate(control_images):
+    plt.imsave(f"/home/guoshida/projects/aigc-smart-painter/assets2/control_image_{i}.jpg", np.array(image))
 
-    init_image = encode_frame_json(image)
-    mask_image = encode_frame_json(mask)
-    body = {"data": [
-        {"request_id": "1", "prompt": "best quality,symmetry realistic,real life,photography,masterpiece,8K,HDR,highres,1 gril, looking at viewer", "batch_size": 1,
-         "num_inference_steps": 50, "guidance_scale": 7.5, "init_image": init_image, "mask_image": mask_image},
-    ]}
-    # print(json.dumps(body))
-    start = time.time()
-    result = requests.post(REST_API_URL, json=json.dumps(body)).json()["result"]
-    end = time.time()
-    print(f"batch api inference time: {end - start}s")
-    for request_result in result:
-        images = [Image.fromarray(decode_frame_json(img)) for img in request_result["images"]]
-        painter.image_grid(images, rows=1, cols=len(images) // 1)
-        painter.image_show()
-    print("finished")
-
-
+for i, image in enumerate(images):
+    plt.imsave(f"/home/guoshida/projects/aigc-smart-painter/assets2/result_{i}.jpg", np.array(image))
+# painter = GridPainter()
+# painter.image_grid(images, rows=2, cols=len(images) // 2)
+# plt.imsave("/data/cx/ysp/aigc-smart-painter/assets2/result.jpg", np.array(painter.grid))
