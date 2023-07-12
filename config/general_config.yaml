@@ -45,7 +45,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:5'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
 #  controlnet_inpaint_openpose: #蒙版+contronet控制重绘
 #    class_name: 'StableDiffusionControlNetInpaintPipeline'
 #    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
@@ -59,7 +59,7 @@ pipes:
 #    mode: 'on'
   controlnet_inpaint_multi: #蒙版+contronet控制重绘
     class_name: 'StableDiffusionControlNetInpaintPipeline'
-    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/epiCRealism'
     controlnet:
       - type: "openpose"
         class_name: 'ControlNetModel'
@@ -72,7 +72,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:5'
     scheduler: 'PNDMScheduler'
-    mode: 'off'
+    mode: 'on'
   canny_control: #controlnet控制
     class_name: 'StableDiffusionControlNetPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
