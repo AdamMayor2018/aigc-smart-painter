@@ -169,6 +169,31 @@ class StableDiffusionPredictor:
             arr_seg = 255 - arr_seg
         return arr_seg
 
+    def segformer_multi_mask_inference(self, image, *args, reverse=False):
+        if isinstance(image, np.ndarray):
+            image = Image.fromarray(image)
+        inputs = self.prepared_pipes["cloth_feature_extractor"](images=image, return_tensors="pt")
+        outputs = self.prepared_pipes["segformer"](**inputs)
+        logits = outputs.logits.cpu()
+
+        upsampled_logits = nn.functional.interpolate(
+            logits,
+            size=image.size[::-1],
+            mode="bilinear",
+            align_corners=False,
+        )
+        pred_seg = upsampled_logits.argmax(dim=1)[0]
+        for part in args:
+            if part.lower() != "background":
+                pred_seg[pred_seg == int(part_pairs[part.lower()])] = 255
+            else:
+                pred_seg[pred_seg == 0] = 255
+        pred_seg[pred_seg != 255] = 0
+        arr_seg = pred_seg.cpu().numpy().astype("uint8")
+        #arr_seg *= 255
+        if reverse:
+            arr_seg = 255 - arr_seg
+        return arr_seg
 
 if __name__ == '__main__':
     sdp = StableDiffusionPredictor(YamlConfigLoader("/data/cx/ysp/aigc-smart-painter/config/general_config.yaml"))
