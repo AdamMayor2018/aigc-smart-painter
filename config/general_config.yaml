@@ -31,7 +31,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:5'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
   img2img: #基础图生图
     class_name: 'StableDiffusionImg2ImgPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
@@ -45,7 +45,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:5'
     scheduler: 'PNDMScheduler'
-    mode: 'off'
+    mode: 'on'
 #  controlnet_inpaint_openpose: #蒙版+contronet控制重绘
 #    class_name: 'StableDiffusionControlNetInpaintPipeline'
 #    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
@@ -70,9 +70,9 @@ pipes:
         torch_dtype: 'torch.float16'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:7'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
   canny_control: #controlnet控制
     class_name: 'StableDiffusionControlNetPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
@@ -82,7 +82,7 @@ pipes:
         torch_dtype: 'torch.float16'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:7'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'off'
   openpose_control:
@@ -94,7 +94,7 @@ pipes:
        torch_dtype: 'torch.float16'
        pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:7'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'off'
   cloth_feature_extractor:
@@ -113,7 +113,7 @@ pipes:
     class_name: 'OpenposeDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
     torch_dtype: 'torch.float32'
-    device: 'cuda:5'
+    device: 'cuda:7'
     mode: 'on'
 
 

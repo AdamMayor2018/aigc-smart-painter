@@ -3,6 +3,8 @@
 # @Description: 文生图http接口
 import numpy as np
 from flask import Flask, request, jsonify
+import sys
+sys.path.append("../")
 from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
