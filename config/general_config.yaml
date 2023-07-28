@@ -1,6 +1,6 @@
 base_model_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
 aux_model_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
-device: 'cuda:5'
+device: 'cuda:4'
 scheduler: 'PNDMScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
 fp16: True
 smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好的生成512的图片）
@@ -9,13 +9,13 @@ smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好�
 sam:
   checkpoint: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
   model_type: 'vit_h'
-  device: 'cuda:5'
+  device: 'cuda:4'
 
 #yolo相关配置
 yolo:
     checkpoint_path: '/data/cx/ysp/h2v_screen_live/weights/yolov5s-face-raw.pt'
     weight_yaml_path: '/data/cx/ysp/h2v_screen_live/config/yolov5_face/yolov5s.yaml'
-    device: 'cuda:5'
+    device: 'cuda:4'
     conf_thres: 0.3
     iou_thres: 0.05
     use_fp16: True
@@ -29,21 +29,21 @@ pipes:
     class_name: 'StableDiffusionPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:4'
     scheduler: 'PNDMScheduler'
     mode: 'off'
   img2img: #基础图生图
     class_name: 'StableDiffusionImg2ImgPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:4'
     scheduler: 'PNDMScheduler'
     mode: 'off'
   inpaint: #基础重绘
     class_name: 'StableDiffusionInpaintPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-2-inpainting'
     torch_dtype: 'torch.float16'
-    device: 'cuda:5'
+    device: 'cuda:4'
     scheduler: 'PNDMScheduler'
     mode: 'on'
 #  controlnet_inpaint_openpose: #蒙版+contronet控制重绘
@@ -70,7 +70,7 @@ pipes:
         torch_dtype: 'torch.float16'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:4'
     scheduler: 'PNDMScheduler'
     mode: 'off'
   canny_control: #controlnet控制
@@ -82,7 +82,7 @@ pipes:
         torch_dtype: 'torch.float16'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:4'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'off'
   openpose_control:
@@ -94,7 +94,7 @@ pipes:
        torch_dtype: 'torch.float16'
        pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose'
     torch_dtype: 'torch.float16'
-    device: 'cuda:7'
+    device: 'cuda:4'
     scheduler: 'UniPCMultistepScheduler'
     mode: 'off'
   cloth_feature_extractor:
@@ -113,7 +113,7 @@ pipes:
     class_name: 'OpenposeDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
     torch_dtype: 'torch.float32'
-    device: 'cuda:7'
+    device: 'cuda:4'
     mode: 'on'
 
 

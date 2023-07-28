@@ -10,7 +10,7 @@ import numpy as np
 import torch.nn as nn
 from config.conf_loader import YamlConfigLoader
 from controlnet_aux import OpenposeDetector, CannyDetector
-from diffusers import (
+from model_plugin.diffusers import (
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
@@ -18,7 +18,7 @@ from diffusers import (
     StableDiffusionControlNetInpaintPipeline,
     ControlNetModel
 )
-from diffusers import (
+from model_plugin.diffusers import (
     DDPMScheduler,
     DDIMScheduler,
     PNDMScheduler,
@@ -90,7 +90,7 @@ class StableDiffusionPredictor:
                     loaded_pipe = globals()[config.get("class_name")].from_pretrained(
                         config.get("pretrained_model_name_or_path"), scheduler=scheduler,
                         torch_dtype=eval(config.get("torch_dtype")), **extra_params)
-                except KeyError:
+                except:
                     loaded_pipe = globals()[config.get("class_name")].from_pretrained(
                         config.get("pretrained_model_name_or_path"), **extra_params)
                 try:
