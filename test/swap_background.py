@@ -12,7 +12,7 @@ from core.sam_predictor import RawSeger
 import matplotlib.pyplot as plt
 from util.painter import GridPainter
 from config.conf_loader import YamlConfigLoader
-from diffusers import (
+from model_plugin.diffusers import (
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
@@ -30,11 +30,12 @@ from service.magic_closet import MagicCloset
 # 读取图片
 img_path = "/data/cx/ysp/aigc-smart-painter/assets2/cloth1.jpg"
 image = Image.open(img_path)
+
 conf_loader = YamlConfigLoader(yaml_path="/data/cx/ysp/aigc-smart-painter/config/general_config.yaml")
 # 初始化服务
 cloth_service = MagicCloset(conf_loader)
-prompt = "indoors background, (wooden furniture:1.3),Midcentury Modern, (European decoration style:1.4),white wall paper,"
-mask_image,  images = cloth_service.swap_background(image, prompt=prompt, num_images_per_prompt=8, num_inference_steps=50, strength=0.95, reverse=False, guidance_scale=7.5)
+prompt = "outdoors background,seaside, beach,sand, sunset,"
+mask_image,  images = cloth_service.swap_background(image, prompt=prompt, num_images_per_prompt=2, num_inference_steps=30, strength=1, reverse=False, guidance_scale=7.5)
 #mask_image,control_images, images = cloth_service.swap_background(image, prompt, num_images_per_prompt=8,reverse=True)
 plt.imsave(f"/data/cx/ysp/aigc-smart-painter/assets2/mask.jpg", np.array(mask_image))
 # for i, image in enumerate(control_images):

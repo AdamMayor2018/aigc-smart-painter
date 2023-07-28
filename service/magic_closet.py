@@ -31,7 +31,7 @@ class MagicCloset(BaseMagicTool):
         image = image.convert('RGB')
         width, height = image.size
         mask_image = self.base_predictor.segformer_mask_inference(image=image, part="background", reverse=reverse)
-        # mask_image = cv2.dilate(mask_image, kernel=np.ones((3,3),np.uint8), iterations=3)
+        mask_image = cv2.dilate(mask_image, kernel=np.ones((5,5),np.uint8), iterations=3)
         # mask_image = cv2.erode(mask_image, kernel=np.ones((3, 3), np.uint8), iterations=1)
         #mask_image = cv2.erode(mask_image, kernel=np.ones((5,5),np.uint8), iterations=2)
         images = self.base_predictor.inpaint_inference(prompt=prompt, init_image=image,
