@@ -7,7 +7,7 @@ smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好�
 
 # sam相关配置
 sam:
-  checkpoint: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
+  checkpoint_path: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
   model_type: 'vit_h'
   device: 'cuda:4'
 
@@ -20,6 +20,24 @@ yolo:
     iou_thres: 0.05
     use_fp16: True
     img_size: 608
+
+# 各类前处理模型配置
+plugins:
+  sam:
+    checkpoint_path: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
+    model_type: 'vit_h'
+    device: 'cuda:4'
+    mode: 'on'
+
+  yolo:
+    checkpoint_path: '/data/cx/ysp/h2v_screen_live/weights/yolov5s-face-raw.pt'
+    weight_yaml_path: '/data/cx/ysp/h2v_screen_live/config/yolov5_face/yolov5s.yaml'
+    device: 'cuda:4'
+    conf_thres: 0.3
+    iou_thres: 0.05
+    use_fp16: True
+    img_size: 608
+    mode: 'off'
 
 
 
@@ -41,6 +59,7 @@ pipes:
     mode: 'off'
   inpaint: #基础重绘
     class_name: 'StableDiffusionInpaintPipeline'
+    #pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-2-inpainting'
     torch_dtype: 'torch.float16'
     device: 'cuda:4'
@@ -113,7 +132,7 @@ pipes:
     class_name: 'OpenposeDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
     torch_dtype: 'torch.float32'
-    device: 'cuda:4'
+    device: 'cuda:7'
     mode: 'on'
 
 
