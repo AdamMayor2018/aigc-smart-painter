@@ -9,6 +9,7 @@ from PIL import Image
 import numpy as np
 import torch.nn as nn
 from config.conf_loader import YamlConfigLoader
+from segment_anything import sam_model_registry, SamPredictor
 from controlnet_aux import OpenposeDetector, CannyDetector
 from model_plugin.diffusers import (
     StableDiffusionPipeline,
@@ -65,8 +66,25 @@ class StableDiffusionPredictor:
         self.model_path = self.config_loader.attempt_load_param("base_model_path")
         self.fp16 = torch.float16 if self.config_loader.attempt_load_param("fp16") else torch.float32
         self.device = f"{self.config_loader.attempt_load_param('device')}"
+        self.controlnets = []
         self.scheduler = self.config_loader.attempt_load_param("scheduler")
         self.load_pipes()
+        self.load_plugins()
+
+    def load_plugins(self):
+        plugins = self.config_loader.attempt_load_param("plugins")
+        self.prepared_plugins = {}
+        for name, config in plugins.items():
+            if config.get("mode") == "on":
+                if name == "sam":
+                    model = sam_model_registry[config.get("model_type")](config.get("checkpoint_path"))
+                    model = model.to(config.get("device"))
+                    loaded_plugin = SamPredictor(model)
+                elif name == "yolo":
+                    pass
+                else:
+                    raise Exception(f"plugin {name} not supported!")
+                self.prepared_plugins[name] = loaded_plugin
 
     def load_pipes(self):
         pipes = self.config_loader.attempt_load_param("pipes")
@@ -83,7 +101,9 @@ class StableDiffusionPredictor:
                             net["torch_dtype"] = eval(net.get("torch_dtype"))
                             fix_subconfig = copy.deepcopy(net)
                             fix_subconfig.pop("class_name")
-                            extra_params[subname].append(globals()[class_name].from_pretrained(**fix_subconfig))
+                            controlnet = globals()[class_name].from_pretrained(**fix_subconfig)
+                            self.controlnets.append(controlnet)
+                            extra_params[subname].append(controlnet)
                 try:
                     scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path,
                                                                                    subfolder="scheduler")
@@ -127,7 +147,7 @@ class StableDiffusionPredictor:
     def controlnet_inpaint_inference(self, mode: str, prompt, image, control_images, mask_image, **kwargs):
         if mode == "multi":
             images = self.prepared_pipes["controlnet_inpaint_multi"](image=image, control_image=control_images,
-                                                                        mask_image=mask_image, prompt=prompt, **kwargs)
+                                                                     mask_image=mask_image, prompt=prompt, **kwargs)
         else:
             raise ValueError("mode now must be one of ['multi']")
         return images
@@ -138,7 +158,8 @@ class StableDiffusionPredictor:
             control_image = self.prepared_pipes["openpose_aux"](input_image=image, hand_and_face=hand_and_face,
                                                                 **kwargs)
         elif mode == "canny":
-            control_image = Image.fromarray(CannyDetector()(image))
+            control_image = CannyDetector()(image)
+            control_image = Image.fromarray(control_image)
         else:
             raise ValueError("mode now must be one of ['openpose']")
         return control_image
@@ -164,10 +185,49 @@ class StableDiffusionPredictor:
             pred_seg[pred_seg == 0] = 255
             pred_seg[pred_seg != 255] = 0
         arr_seg = pred_seg.cpu().numpy().astype("uint8")
-        #arr_seg *= 255
+        # arr_seg *= 255
         if reverse:
             arr_seg = 255 - arr_seg
         return arr_seg
+
+    def sam_mask_inferece(self, image, method, input_data, input_label=None, multimask_output=False, select_best=False,
+                          reverse=False):
+        if not isinstance(image, np.ndarray):
+            image = np.array(image)
+        self.prepared_plugins["sam"].set_image(image)
+        if method == "box":
+            masks, scores, logits = self.prepared_plugins["sam"].predict(
+                point_coords=None,
+                point_labels=None,
+                box=input_data[None, :],
+                multimask_output=multimask_output,
+            )
+            masks = masks.astype(np.uint8).squeeze() * 255
+            if reverse:
+                masks = 255 - masks
+            if select_best:
+                masks = masks[np.argmax(scores)]
+                scores = np.max(scores)
+        elif method == "point":
+            assert len(input_data) == len(input_label), "num points must equal to num labels"
+            if not isinstance(input_data, np.ndarray):
+                input_data = np.array(input_data)
+            if not isinstance(input_label, np.ndarray):
+                input_label = np.array(input_label)
+            masks, scores, logits = self.prepared_plugins["sam"].predict(
+                point_coords=input_data,
+                point_labels=input_label,
+                multimask_output=multimask_output,
+            )
+            masks = masks.astype(np.uint8).squeeze() * 255
+            if reverse:
+                masks = 255 - masks
+            if select_best:
+                masks = masks[np.argmax(scores)]
+                scores = np.max(scores)
+        else:
+            raise ValueError("method must be one of ['box', 'point']")
+        return scores, masks
 
     def segformer_multi_mask_inference(self, image, *args, reverse=False):
         if isinstance(image, np.ndarray):
@@ -190,10 +250,11 @@ class StableDiffusionPredictor:
                 pred_seg[pred_seg == 0] = 255
         pred_seg[pred_seg != 255] = 0
         arr_seg = pred_seg.cpu().numpy().astype("uint8")
-        #arr_seg *= 255
+        # arr_seg *= 255
         if reverse:
             arr_seg = 255 - arr_seg
         return arr_seg
+
 
 if __name__ == '__main__':
     sdp = StableDiffusionPredictor(YamlConfigLoader("/data/cx/ysp/aigc-smart-painter/config/general_config.yaml"))
