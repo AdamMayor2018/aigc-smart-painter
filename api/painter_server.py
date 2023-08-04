@@ -8,6 +8,7 @@ sys.path.append("../")
 from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
+from util.image_tool import resize_to_fold
 #from core.controller import ControlNetPreProcessor
 from PIL import Image
 import argparse
@@ -46,16 +47,6 @@ def wrap_json(collect_images):
     return result_data
 
 
-def resize_to_512(width, height):
-    if width > height:
-        infer_height = int(height * 512 / width)
-        infer_width = 512
-    else:
-        infer_width = int(width * 512 / height)
-        infer_height = 512
-    return infer_width, infer_height
-
-
 @app.post("/sd/tti")
 def text2img_infer():
     if request.method == "POST":
@@ -80,7 +71,7 @@ def text2img_infer():
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 # 宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-                    infer_width, infer_height = resize_to_512(width, height)
+                    infer_width, infer_height = resize_to_fold(width, height)
                 else:
                     infer_height = height
                     infer_width = width
@@ -132,7 +123,7 @@ def img2img_infer():
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 #宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-                    infer_width, infer_height = resize_to_512(width, height)
+                    infer_width, infer_height = resize_to_fold(width, height)
                 else:
                     infer_height = height
                     infer_width = width
@@ -188,7 +179,7 @@ def inpaint_infer():
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 #宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-                    infer_width, infer_height = resize_to_512(width, height)
+                    infer_width, infer_height = resize_to_fold(width, height)
                 else:
                     infer_height = height
                     infer_width = width
@@ -252,7 +243,7 @@ def controlnet_infer():
                     return jsonify({"error info": "retrive batch_size is limited to 16 for cuda OOM issues."}), 400
                 #宽高中的长边缩放到512，短边进行等比缩放
                 if smart_mode:
-                    infer_width, infer_height = resize_to_512(width, height)
+                    infer_width, infer_height = resize_to_fold(width, height)
                 else:
                     infer_height = height
                     infer_width = width

@@ -9,6 +9,7 @@ import cv2
 from core.sd_predictor import StableDiffusionPredictor
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
+from util.image_tool import resize_to_fold
 from PIL import Image
 
 
@@ -33,25 +34,54 @@ class MagicCloset(BaseMagicTool):
 
     # 更换背景
     def swap_background(self, image, seg_method="segformer", sam_method="box", input_data=None, input_label=None, prompt="", num_images_per_prompt=4, num_inference_steps=50, strength=1,
-                        guidance_scale=7.5, reverse=True):
+                        guidance_scale=7.5, reverse=True, smart_mode=True):
         image = image.convert('RGB')
         width, height = image.size
+        if smart_mode:
+            infer_width, infer_height = resize_to_fold(width, height)
+            input_data = input_data * np.array([infer_width / width, infer_height/ height, infer_width/ width, infer_height/ height])
+            input_data = np.trunc(input_data)
+        else:
+            infer_height = height
+            infer_width = width
+        init_image = cv2.resize(np.array(image), (infer_width, infer_height))
+        #mask_image = cv2.resize(mask_image, (infer_width, infer_height))
         if seg_method == "segformer":
-            mask_image = self.base_predictor.segformer_mask_inference(image=image, part="background", reverse=reverse)
+            mask_image = self.base_predictor.segformer_mask_inference(image=init_image, part="background", reverse=reverse)
             mask_image = cv2.dilate(mask_image, kernel=np.ones((5, 5), np.uint8), iterations=2)
         elif seg_method == "sam":
-            scores, mask_image = self.base_predictor.sam_mask_inferece(image=image, method=sam_method, input_data=input_data, input_label=input_label, reverse=reverse)
+            scores, mask_image = self.base_predictor.sam_mask_inferece(image=init_image, method=sam_method, input_data=input_data, input_label=input_label, reverse=reverse)
         else:
             raise ValueError("seg_method must be 'segformer' or 'sam'")
 
-        images = self.base_predictor.inpaint_inference(prompt=prompt, init_image=image,
-                                                       mask_image=Image.fromarray(mask_image),
-                                                       num_images_per_prompt=num_images_per_prompt,
-                                                       num_inference_steps=num_inference_steps,
-                                                       strength=strength,
-                                                       guidance_scale=guidance_scale, width=width // 8 * 8,
-                                                       height=height // 8 * 8).images
-        images = [img.resize((width, height)) for img in images]
+
+        # images = self.base_predictor.inpaint_inference(prompt=prompt, init_image=init_image,
+        #                                                mask_image=Image.fromarray(mask_image),
+        #                                                num_images_per_prompt=num_images_per_prompt,
+        #                                                num_inference_steps=num_inference_steps,
+        #                                                strength=strength,
+        #                                                guidance_scale=guidance_scale, width=width // 8 * 8,
+        #                                                height=height // 8 * 8).images
+        # 1.获取蒙版边缘
+        control_image_canny = self.base_predictor.controlnet_aux_inferece(mode="canny", image=mask_image)
+        control_images = [control_image_canny]
+        # 只使用单个controlnet 索引1是canny
+        self.base_predictor.prepared_pipes["controlnet_inpaint_multi"].controlnet = self.base_predictor.controlnets[1]
+        init_image = Image.fromarray(init_image) if isinstance(init_image, np.ndarray) else init_image
+        mask_image = Image.fromarray(mask_image) if isinstance(mask_image, np.ndarray) else mask_image
+        images = self.base_predictor.controlnet_inpaint_inference(mode="multi",
+                                                                  prompt=self.pm.generate_pos_prompt(prompt),
+                                                                  image=init_image,
+                                                                  mask_image=mask_image,
+                                                                  num_images_per_prompt=num_images_per_prompt,
+                                                                  num_inference_steps=num_inference_steps,
+                                                                  guidance_scale=guidance_scale, control_images=control_images,
+                                                                  strength=strength).images
+        if smart_mode:
+            images = [img.resize((width, height)) for img in images]
+            mask_image = mask_image.resize((width, height))
+
+
 
         return mask_image, images
 

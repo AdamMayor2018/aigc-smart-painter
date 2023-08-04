@@ -66,6 +66,7 @@ class StableDiffusionPredictor:
         self.model_path = self.config_loader.attempt_load_param("base_model_path")
         self.fp16 = torch.float16 if self.config_loader.attempt_load_param("fp16") else torch.float32
         self.device = f"{self.config_loader.attempt_load_param('device')}"
+        self.controlnets = []
         self.scheduler = self.config_loader.attempt_load_param("scheduler")
         self.load_pipes()
         self.load_plugins()
@@ -100,7 +101,9 @@ class StableDiffusionPredictor:
                             net["torch_dtype"] = eval(net.get("torch_dtype"))
                             fix_subconfig = copy.deepcopy(net)
                             fix_subconfig.pop("class_name")
-                            extra_params[subname].append(globals()[class_name].from_pretrained(**fix_subconfig))
+                            controlnet = globals()[class_name].from_pretrained(**fix_subconfig)
+                            self.controlnets.append(controlnet)
+                            extra_params[subname].append(controlnet)
                 try:
                     scheduler = globals()[config.get("scheduler")].from_pretrained(self.model_path,
                                                                                    subfolder="scheduler")
@@ -155,7 +158,8 @@ class StableDiffusionPredictor:
             control_image = self.prepared_pipes["openpose_aux"](input_image=image, hand_and_face=hand_and_face,
                                                                 **kwargs)
         elif mode == "canny":
-            control_image = Image.fromarray(CannyDetector()(image))
+            control_image = CannyDetector()(image)
+            control_image = Image.fromarray(control_image)
         else:
             raise ValueError("mode now must be one of ['openpose']")
         return control_image

@@ -64,7 +64,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:4'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
 #  controlnet_inpaint_openpose: #蒙版+contronet控制重绘
 #    class_name: 'StableDiffusionControlNetInpaintPipeline'
 #    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/chilloutmix_NiPrunedFp32Fix'
@@ -82,16 +82,16 @@ pipes:
     controlnet:
       - type: "openpose"
         class_name: 'ControlNetModel'
-        torch_dtype: 'torch.float16'
+        torch_dtype: 'torch.float32'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-openpose'
       - type: "canny"
         class_name: 'ControlNetModel'
-        torch_dtype: 'torch.float16'
+        torch_dtype: 'torch.float32'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-canny'
     torch_dtype: 'torch.float16'
     device: 'cuda:4'
     scheduler: 'PNDMScheduler'
-    mode: 'off'
+    mode: 'on'
   canny_control: #controlnet控制
     class_name: 'StableDiffusionControlNetPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
@@ -131,7 +131,7 @@ pipes:
   openpose_aux:
     class_name: 'OpenposeDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
-    torch_dtype: 'torch.float32'
+    torch_dtype: 'torch.float16'
     device: 'cuda:7'
     mode: 'on'
 
