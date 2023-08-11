@@ -10,7 +10,7 @@ import numpy as np
 import torch.nn as nn
 from config.conf_loader import YamlConfigLoader
 from segment_anything import sam_model_registry, SamPredictor
-from controlnet_aux import OpenposeDetector, CannyDetector
+from controlnet_aux import OpenposeDetector, CannyDetector, MidasDetector
 from model_plugin.diffusers import (
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
@@ -160,8 +160,11 @@ class StableDiffusionPredictor:
         elif mode == "canny":
             control_image = CannyDetector()(image)
             control_image = Image.fromarray(control_image)
+        elif mode == "midas":
+            control_image = MidasDetector()(image)
+            control_image = Image.fromarray(control_image)
         else:
-            raise ValueError("mode now must be one of ['openpose']")
+            raise ValueError("mode now must be one of ['openpose', 'canny', 'midas']")
         return control_image
 
     def segformer_mask_inference(self, image, part="upper-clothes", reverse=False):

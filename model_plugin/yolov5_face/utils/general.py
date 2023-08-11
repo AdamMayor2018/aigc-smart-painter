@@ -9,7 +9,7 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from numba import jit
+#from numba import jit
 import cv2
 import numpy as np
 import torch
