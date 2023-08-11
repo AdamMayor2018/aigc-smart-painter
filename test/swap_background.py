@@ -1,6 +1,8 @@
 # @Time : 2023/6/27 22:39
 # @Author : CaoXiang
 # @Description: 测试AI模特换装
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 from PIL import Image, ImageDraw
 import typing
 import requests
