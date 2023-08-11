@@ -7,11 +7,12 @@
 import numpy as np
 import cv2
 from core.sd_predictor import StableDiffusionPredictor
+from model_plugin.diffusers.pipelines.controlnet import MultiControlNetModel
 from config.conf_loader import YamlConfigLoader
 from core.prompt_loader import PromptManager
 from util.image_tool import resize_to_fold
 from PIL import Image
-
+import copy
 
 class BaseMagicTool:
     def __init__(self, config_loader: YamlConfigLoader):
@@ -34,7 +35,7 @@ class MagicCloset(BaseMagicTool):
 
     # 更换背景
     def swap_background(self, image, seg_method="segformer", sam_method="box", input_data=None, input_label=None, prompt="", num_images_per_prompt=4, num_inference_steps=50, strength=1,
-                        guidance_scale=7.5, reverse=True, smart_mode=True):
+                        guidance_scale=7.5, reverse=True, smart_mode=False):
         image = image.convert('RGB')
         width, height = image.size
         if smart_mode:
@@ -64,11 +65,16 @@ class MagicCloset(BaseMagicTool):
         #                                                height=height // 8 * 8).images
         # 1.获取蒙版边缘
         control_image_canny = self.base_predictor.controlnet_aux_inferece(mode="canny", image=mask_image)
-        control_images = [control_image_canny]
-        # 只使用单个controlnet 索引1是canny
-        self.base_predictor.prepared_pipes["controlnet_inpaint_multi"].controlnet = self.base_predictor.controlnets[1]
+        #mask_image = copy.deepcopy(mask_image).resize((752, 1000))
+        control_image_midas = self.base_predictor.controlnet_aux_inferece(mode="midas", image=mask_image)
+        control_image_midas.save("/data/cx/ysp/aigc-smart-painter/assets2/medias.jpg")
+        control_images = [control_image_canny, control_image_midas]
+        #control_images = [control_image_canny, control_image_midas]
+        # 只使用单个controlnet 索引1是canny 索引2是depth
+        self.base_predictor.prepared_pipes["controlnet_inpaint_multi"].controlnet = MultiControlNetModel(self.base_predictor.controlnets[1:])
         init_image = Image.fromarray(init_image) if isinstance(init_image, np.ndarray) else init_image
         mask_image = Image.fromarray(mask_image) if isinstance(mask_image, np.ndarray) else mask_image
+        mask_image = mask_image.resize((752, 1000))
         images = self.base_predictor.controlnet_inpaint_inference(mode="multi",
                                                                   prompt=self.pm.generate_pos_prompt(prompt),
                                                                   image=init_image,
