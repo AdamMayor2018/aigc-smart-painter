@@ -49,7 +49,7 @@ class MagicCloset(BaseMagicTool):
         #mask_image = cv2.resize(mask_image, (infer_width, infer_height))
         if seg_method == "segformer":
             mask_image = self.base_predictor.segformer_mask_inference(image=init_image, part="background", reverse=reverse)
-            mask_image = cv2.dilate(mask_image, kernel=np.ones((5, 5), np.uint8), iterations=2)
+            mask_image = cv2.dilate(mask_image, kernel=np.ones((3, 3), np.uint8), iterations=2)
         elif seg_method == "sam":
             scores, mask_image = self.base_predictor.sam_mask_inferece(image=init_image, method=sam_method, input_data=input_data, input_label=input_label, reverse=reverse)
         else:
@@ -66,7 +66,9 @@ class MagicCloset(BaseMagicTool):
         # 1.获取蒙版边缘
         control_image_canny = self.base_predictor.controlnet_aux_inferece(mode="canny", image=mask_image)
         #mask_image = copy.deepcopy(mask_image).resize((752, 1000))
-        control_image_midas = self.base_predictor.controlnet_aux_inferece(mode="midas", image=mask_image)
+        medias_init_image = cv2.resize(init_image, (512, 512))
+        control_image_midas = self.base_predictor.controlnet_aux_inferece(mode="midas", image=medias_init_image)
+        control_image_midas = control_image_midas.resize((width, height))
         control_image_midas.save("/data/cx/ysp/aigc-smart-painter/assets2/medias.jpg")
         control_images = [control_image_canny, control_image_midas]
         #control_images = [control_image_canny, control_image_midas]
@@ -74,7 +76,7 @@ class MagicCloset(BaseMagicTool):
         self.base_predictor.prepared_pipes["controlnet_inpaint_multi"].controlnet = MultiControlNetModel(self.base_predictor.controlnets[1:])
         init_image = Image.fromarray(init_image) if isinstance(init_image, np.ndarray) else init_image
         mask_image = Image.fromarray(mask_image) if isinstance(mask_image, np.ndarray) else mask_image
-        mask_image = mask_image.resize((752, 1000))
+        #mask_image = mask_image.resize((750, 1000))
         images = self.base_predictor.controlnet_inpaint_inference(mode="multi",
                                                                   prompt=self.pm.generate_pos_prompt(prompt),
                                                                   image=init_image,

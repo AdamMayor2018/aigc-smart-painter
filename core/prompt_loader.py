@@ -2,13 +2,8 @@
 # @Author : CaoXiang
 # @Description: 用来管理出图的基础prompt
 
-BASE_POS_PROMPT = "(masterpeice),(best quality),highres,HDR"
-BASE_NEG_PROMPT = "nsfw,(worst quality,low quality,extra digits:1.2),right lantern,brightness,(nipples:1.2),pussy," \
-                  "EasyNegative,(worst quality:2),(low quality:2),(normal quality:2),lowres,((monochrome))," \
-                  "((grayscale)),skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers," \
-                  "strange fingers,bad hand,bare thights,mole,anime,(painting by bad-artist:0.9),watermark,text," \
-                  "error,blurry,jpeg artifacts,cropped,signature,username,artist name,bad anatomy,extra fingers," \
-                  "fewer fingers,poor drawn hand,occlusion"
+BASE_POS_PROMPT = "(masterpeice),(best quality),highres,HDR,"
+BASE_NEG_PROMPT = "(deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
 
 
 class PromptManager:

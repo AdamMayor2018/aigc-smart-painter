@@ -24,16 +24,16 @@ if __name__ == '__main__':
     REST_API_URL = 'http://10.5.101.152:9900/sd/tti'
     painter = GridPainter()
     body = {"data": [
-        {"request_id": "1", "prompt": "Dutch East India Company stocks", "width": 512, "height": 512, "batch_size": 5,
+        {"request_id": "1", "prompt": "Dutch East India Company stocks", "width": 512, "height": 512, "batch_size": 4,
          "num_inference_steps": 30, "guidance_scale": 7.5},
-        {"request_id": "2", "prompt": "Overseas trade", "width": 512, "height": 512, "batch_size": 5,
-         "num_inference_steps": 30, "guidance_scale": 7.5},
-        {"request_id": "3", "prompt": "17th century", "width": 512, "height": 512, "batch_size": 5,
-         "num_inference_steps": 30, "guidance_scale": 7.5},
-        {"request_id": "4", "prompt": "Shareholder interests", "width": 512, "height": 512, "batch_size": 5,
-         "num_inference_steps": 30, "guidance_scale": 7.5},
-        {"request_id": "5", "prompt": "Stock issuance", "width": 512, "height": 512, "batch_size": 5,
-         "num_inference_steps": 30, "guidance_scale": 7.5}
+        # {"request_id": "2", "prompt": "Overseas trade", "width": 512, "height": 512, "batch_size": 5,
+        #  "num_inference_steps": 30, "guidance_scale": 7.5},
+        # {"request_id": "3", "prompt": "17th century", "width": 512, "height": 512, "batch_size": 5,
+        #  "num_inference_steps": 30, "guidance_scale": 7.5},
+        # {"request_id": "4", "prompt": "Shareholder interests", "width": 512, "height": 512, "batch_size": 5,
+        #  "num_inference_steps": 30, "guidance_scale": 7.5},
+        # {"request_id": "5", "prompt": "Stock issuance", "width": 512, "height": 512, "batch_size": 5,
+        #  "num_inference_steps": 30, "guidance_scale": 7.5}
     ]}
 
 

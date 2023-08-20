@@ -1,6 +1,6 @@
-base_model_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
+base_model_path: '/data/cx/ysp/aigc-smart-painter/models/Realistic_Vision_V4.0'
 aux_model_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
-device: 'cuda:4'
+device: 'cuda:7'
 scheduler: 'PNDMScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
 fp16: True
 smart_mode: True  #是否自动进行长边等比例缩放 （SD只能比较好的生成512的图片）
@@ -26,13 +26,13 @@ plugins:
   sam:
     checkpoint_path: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
     model_type: 'vit_h'
-    device: 'cuda:4'
+    device: 'cuda:7'
     mode: 'on'
 
   yolo:
     checkpoint_path: '/data/cx/ysp/h2v_screen_live/weights/yolov5s-face-raw.pt'
     weight_yaml_path: '/data/cx/ysp/h2v_screen_live/config/yolov5_face/yolov5s.yaml'
-    device: 'cuda:4'
+    device: 'cuda:7'
     conf_thres: 0.3
     iou_thres: 0.05
     use_fp16: True
@@ -45,9 +45,9 @@ plugins:
 pipes:
   txt2img: #基础文生图
     class_name: 'StableDiffusionPipeline'
-    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/Realistic_Vision_V4.0/'
     torch_dtype: 'torch.float16'
-    device: 'cuda:4'
+    device: 'cuda:5'
     scheduler: 'PNDMScheduler'
     mode: 'off'
   img2img: #基础图生图
@@ -78,7 +78,7 @@ pipes:
 #    mode: 'on'
   controlnet_inpaint_multi: #蒙版+contronet控制重绘
     class_name: 'StableDiffusionControlNetInpaintPipeline'
-    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/epiCRealism'
+    pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/Realistic_Vision_V4.0/'
     controlnet:
       - type: "openpose"
         class_name: 'ControlNetModel'
@@ -92,7 +92,7 @@ pipes:
         class_name: 'ControlNetModel'
         torch_dtype: 'torch.float32'
         pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/sd-controlnet-depth'
-    torch_dtype: 'torch.float16'
+    torch_dtype: 'torch.float32'
     device: 'cuda:4'
     scheduler: 'PNDMScheduler'
     mode: 'on'
@@ -125,13 +125,13 @@ pipes:
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/segformer_b2_clothes'
     torch_dtype: 'torch.float32'
     device: 'cpu'
-    mode: 'on'
+    mode: 'off'
   segformer:
     class_name: 'SegformerForSemanticSegmentation'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/segformer_b2_clothes'
     torch_dtype: 'torch.float32'
     device: 'cpu'
-    mode: 'on'
+    mode: 'off'
   openpose_aux:
     class_name: 'OpenposeDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
