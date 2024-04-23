@@ -1,4 +1,4 @@
-base_model_path: '/data/cx/ysp/aigc-smart-painter/models/Realistic_Vision_V4.0'
+base_model_path: '/data/cx/ysp/aigc-smart-painter/models/Realistic_Vision_V5.1_noVAE'
 aux_model_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
 device: 'cuda:7'
 scheduler: 'PNDMScheduler' # aviliables are DDPMScheduler,DDIMScheduler,PNDMScheduler,LMSDiscreteScheduler,EulerDiscreteScheduler,EulerAncestralDiscreteScheduler,DPMSolverMultistepScheduler,
@@ -27,7 +27,7 @@ plugins:
     checkpoint_path: '/data/cx/ysp/aigc-smart-painter/models/sam/sam_vit_h_4b8939.pth'
     model_type: 'vit_h'
     device: 'cuda:7'
-    mode: 'on'
+    mode: 'off'
 
   yolo:
     checkpoint_path: '/data/cx/ysp/h2v_screen_live/weights/yolov5s-face-raw.pt'
@@ -49,7 +49,7 @@ pipes:
     torch_dtype: 'torch.float16'
     device: 'cuda:5'
     scheduler: 'PNDMScheduler'
-    mode: 'off'
+    mode: 'on'
   img2img: #基础图生图
     class_name: 'StableDiffusionImg2ImgPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
@@ -95,7 +95,7 @@ pipes:
     torch_dtype: 'torch.float32'
     device: 'cuda:4'
     scheduler: 'PNDMScheduler'
-    mode: 'on'
+    mode: 'off'
   canny_control: #controlnet控制
     class_name: 'StableDiffusionControlNetPipeline'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/stable-diffusion-v1-5'
@@ -137,13 +137,13 @@ pipes:
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
     torch_dtype: 'torch.float16'
     device: 'cuda:7'
-    mode: 'on'
+    mode: 'off'
   midas_aux:
     class_name: 'MidasDetector'
     pretrained_model_name_or_path: '/data/cx/ysp/aigc-smart-painter/models/control-net-aux-models/Annotators'
     torch_dtype: 'torch.float16'
     device: 'cuda:7'
-    mode: 'on'
+    mode: 'off'
 
 
 

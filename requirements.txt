@@ -1,0 +1,10 @@
+torch==2.0.0
+torchvision==0.15.1
+diffusers==0.26.3
+flask==2.3.2
+opencv-python==4.7.0.72
+controlnet-aux
+matplotlib
+segment-anything==1.0
+transformers
+accelerate
